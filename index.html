@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>G.Animado</title>
+<style>
+:root{
+  --max-width:780px;
+  --card-bg: rgba(255,255,255,0.05);
+  --card-border: rgba(255,255,255,0.12);
+  --accent-1: #ff6fa3;
+  --accent-2: #56d0ff;
+  --accent-3: #caa2ff;
+  --blur-1: 80px;
+  --blur-2: 120px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#07101a;
+  color:#fff;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  overflow:hidden;
+}
+.animated-bg{
+  position:fixed;
+  inset:0;
+  z-index:-2;
+  pointer-events:none;
+  transform:translate3d(0,0,0);
+}
+.animated-bg::before,
+.animated-bg::after{
+  content:"";
+  position:absolute;
+  inset:-30%;
+  background:
+    radial-gradient(20rem 20rem at 15% 30%, var(--accent-1) 0%, transparent 30%),
+    radial-gradient(24rem 24rem at 80% 70%, var(--accent-2) 0%, transparent 30%),
+    radial-gradient(18rem 18rem at 50% 50%, var(--accent-3) 0%, transparent 28%);
+  mix-blend-mode:screen;
+  filter:blur(var(--blur-1));
+  opacity:0.9;
+  will-change:transform,opacity;
+}
+.animated-bg::after{
+  inset:-40%;
+  filter:blur(var(--blur-2)) saturate(1.05);
+  opacity:0.75;
+  animation: drift 20s linear infinite;
+}
+.animated-bg::before{
+  animation: drift 28s linear infinite reverse;
+}
+@keyframes drift{
+  0%{transform:translate3d(-8%, -6%, 0) rotate(0deg)}
+  50%{transform:translate3d(8%, 6%, 0) rotate(25deg)}
+  100%{transform:translate3d(-8%, -6%, 0) rotate(0deg)}
+}
+.container{
+  width:100%;
+  padding:28px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:100vh;
+}
+.card{
+  width:100%;
+  max-width:var(--max-width);
+  background:var(--card-bg);
+  border:1px solid var(--card-border);
+  border-radius:18px;
+  padding:14px;
+  box-shadow:0 18px 50px rgba(2,6,23,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
+  backdrop-filter:blur(8px) saturate(120%);
+  -webkit-backdrop-filter:blur(8px) saturate(120%);
+  transition:transform 300ms cubic-bezier(.2,.9,.2,1);
+}
+.media{
+  border-radius:12px;
+  overflow:hidden;
+  background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.04));
+  box-shadow:0 12px 30px rgba(2,6,23,0.6);
+  transition:transform 300ms ease, box-shadow 300ms ease;
+}
+.media img{
+  display:block;
+  width:100%;
+  height:auto;
+  vertical-align:middle;
+  border-radius:10px;
+  box-shadow:0 10px 40px rgba(0,0,0,0.6), 0 0 0 6px rgba(255,255,255,0.02);
+  transform-origin:center;
+  background:#000;
+}
+.caption{
+  margin-top:12px;
+  font-size:14px;
+  color:rgba(255,255,255,0.85);
+  text-align:center;
+  user-select:none;
+}
+@media (max-width:480px){
+  .card{padding:12px;border-radius:14px}
+  .media{border-radius:10px}
+  .media img{border-radius:8px}
+  .caption{font-size:13px}
+}
+@media (prefers-reduced-motion:reduce){
+  .animated-bg::after,
+  .animated-bg::before{
+    animation:none;
+    transition:none;
+  }
+}
+</style>
+</head>
+<body>
+<div class="animated-bg" aria-hidden="true"></div>
+<main class="container">
+  <div class="card" role="region" aria-label="Contenido principal">
+    <div class="media">
+      <img src="https://media1.tenor.com/m/m4RN_O_yXI8AAAAC/sad-alone.gif" alt="Gif animado" loading="lazy">
+    </div>
+    <div class="caption">Gif</div>
+  </div>
+</main>
+<script>
+(function(){
+  var bg = document.querySelector('.animated-bg');
+  var prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(prefersReduced) return;
+  var pointerX = 0;
+  var pointerY = 0;
+  var lx = 0;
+  var ly = 0;
+  var rafId = null;
+  function onFrame(){
+    lx += (pointerX - lx) * 0.08;
+    ly += (pointerY - ly) * 0.08;
+    bg.style.transform = 'translate3d(' + (lx * 0.02) + 'px,' + (ly * 0.02) + 'px,0)';
+    rafId = requestAnimationFrame(onFrame);
+  }
+  function onPointer(e){
+    var cx = window.innerWidth / 2;
+    var cy = window.innerHeight / 2;
+    pointerX = (e.clientX - cx);
+    pointerY = (e.clientY - cy);
+    if(!rafId) rafId = requestAnimationFrame(onFrame);
+  }
+  window.addEventListener('pointermove', onPointer, {passive:true});
+  window.addEventListener('touchmove', function(e){
+    var t = e.touches[0];
+    if(t) onPointer(t);
+  }, {passive:true});
+  window.addEventListener('resize', function(){
+    pointerX = 0;
+    pointerY = 0;
+  }, {passive:true});
+})();
+</script>
+</body>
+</html>
